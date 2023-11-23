@@ -1,8 +1,8 @@
 import { DataSource } from "typeorm";
 
-export const dataSource = new DataSource({
+export default new DataSource({
   type: "sqlite",
-  database: "../../the_good_corner.sqlite",
+  database: "the_good_corner.sqlite",
   entities: ["src/entities/*.ts"],
   synchronize: true,
 });

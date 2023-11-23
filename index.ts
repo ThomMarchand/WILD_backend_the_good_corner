@@ -1,86 +1,151 @@
 import "reflect-metadata";
-import express from "express";
-import sqlite3 from "sqlite3";
+import express, { Request, Response } from "express";
+import cors from "cors";
+import { In, Like } from "typeorm";
+import { validate } from "class-validator";
 
-import { dataSource } from "./src/config/db";
-import { Ad } from "./src/entities/ad";
+import db from "./src/config/db";
+import Ad from "./src/entities/Ad";
+import Category from "./src/entities/Category";
+import Tag from "./src/entities/Tag";
 
 const app = express();
 const port = 4000;
 
+app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
-
-app.get("/ad", async (req, res) => {
+app.get("/ad", async (req: Request, res: Response) => {
   try {
-    const ads = await Ad.find();
+    const { categoryId, adId, tagIds, name } = req.query;
+    const requestId =
+      typeof adId === "string" && adId.length > 0 ? parseInt(adId) : undefined;
+    const catId =
+      typeof categoryId === "string" && categoryId.length > 0
+        ? parseInt(categoryId)
+        : undefined;
+    const tId =
+      typeof tagIds === "string" && tagIds.length > 0
+        ? tagIds.split(",").map((t) => parseInt(t, 10))
+        : undefined;
+    const reqName = typeof name === "string" ? name : undefined;
+
+    const ads = await Ad.find({
+      relations: { category: true },
+      where: {
+        id: requestId,
+        // title: Like(`%${reqName}%`),
+        category: {
+          id: catId ? catId : undefined,
+        },
+        tags: {
+          id: tId ? In(tId) : undefined,
+        },
+      },
+    });
 
     res.status(200).send(ads);
   } catch (e) {
     console.log(e);
-    res.status(500).send(e.message);
+    res.sendStatus(500);
   }
 });
 
-app.get("/ad/:location", async (req, res) => {
+app.get("/categories", async (req: Request, res: Response) => {
   try {
-    const location: string = req.params.location;
+    const { category } = req.query;
+    const categories = await Category.find({
+      relations: {
+        ads: true,
+      },
+      where: {
+        type: category ? Like(`%${category}%`) : undefined,
+      },
+    });
 
-    const oneAd = await Ad.findBy({ location });
-
-    if (!oneAd) return res.status(404).send("Not found");
-
-    res.status(200).send(oneAd);
+    res.status(200).send(categories);
   } catch (e) {
     console.log(e);
+    res.sendStatus(500);
   }
 });
 
-app.get("/ad/:id", async (req, res) => {
+app.get("/tags", async (req: Request, res: Response) => {
   try {
-    const id: number = parseInt(req.params.id);
+    const { name } = req.body;
+    const tags = await Tag.find({
+      where: { name: name ? Like(`%${name}%`) : undefined },
+    });
 
-    const oneAd = await Ad.findOneBy({ id });
-
-    if (!oneAd) return res.status(404).send("Not found");
-
-    res.status(200).send(oneAd);
+    res.status(200).send(tags);
   } catch (e) {
     console.log(e);
+    res.sendStatus(500);
   }
 });
 
 app.post("/ad", async (req, res) => {
   try {
-    const newAd = Ad.create(req.body);
+    const newAd = await Ad.create(req.body);
+    const errors = await validate(newAd);
 
-    newAd.save();
+    if (errors.length > 0) return res.status(422).send({ errors });
 
-    res.status(200).send(newAd);
+    const newAdSave = await newAd.save();
+
+    res.status(200).send(newAdSave);
   } catch (e) {
     console.log(e);
-    res.status(500).send(e.message);
+    res.sendStatus(500);
+  }
+});
+
+app.post("/category", async (req, res) => {
+  try {
+    const newCategory = await Category.create(req.body);
+    const errors = await validate(newCategory);
+
+    if (errors.length > 0) return res.status(422).send({ errors });
+
+    const newCategorySave = await newCategory.save();
+
+    res.status(200).send(newCategorySave);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+app.post("/tags", async (req: Request, res: Response) => {
+  try {
+    const newTag = Tag.create(req.body);
+    const errors = await validate(newTag);
+
+    if (errors.length > 0) return res.status(422).send({ errors });
+
+    const newTagWithId = await newTag.save();
+
+    res.send(newTagWithId);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
   }
 });
 
 app.patch("/ad/:id", async (req, res) => {
   try {
-    const id: number = parseInt(req.params.id);
+    const adToUpdate = await Ad.findOneBy({ id: parseInt(req.params.id, 10) });
 
-    const updatedAd = await Ad.findOneBy({ id });
+    if (!adToUpdate) return res.sendStatus(404);
 
-    if (!updatedAd) return res.status(404).send("not found");
+    await Ad.merge(adToUpdate, req.body).save();
 
-    if (updatedAd !== null) {
-      updatedAd;
-    }
+    const errors = await validate(adToUpdate);
+    if (errors.length > 0) return res.status(422).send({ errors });
 
-    res.status(200).send(updatedAd);
-  } catch (e) {
-    console.log(e);
+    res.status(200).send(await adToUpdate.save());
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
   }
 });
 
@@ -101,7 +166,24 @@ app.delete("/ad/:id", async (req, res) => {
   }
 });
 
+app.delete("/tags/:id", async (req: Request, res: Response) => {
+  try {
+    const tagToDelete = await Tag.findOneBy({
+      id: parseInt(req.params.id, 10),
+    });
+
+    if (!tagToDelete) return res.sendStatus(404);
+
+    await tagToDelete.remove();
+
+    res.sendStatus(204);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
 app.listen(port, async () => {
-  await dataSource.initialize();
+  await db.initialize();
   console.log(`sever running on http://localhost:${port}`);
 });

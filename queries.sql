@@ -10,9 +10,7 @@ CREATE TABLE ad
 	price REAL,
   picture VARCHAR(255),
   location VARCHAR(100),
-	createdAt DATE,
-	category_id INTEGER,
-  FOREIGN KEY (category_id) REFERENCES category(id)
+	createdAt DATE
 );
 
 CREATE TABLE category
@@ -22,15 +20,15 @@ type VARCHAR(100) NOT NULL
 );
 
 INSERT INTO ad (title, owner, price, location, createdAt, category_id) VALUES 
-    ('Un truc cool', 'Gérard Bouchard', 200, 'Bordeaux', '2023-09-01',3),
-    ('Mon truc en plume', 'Edith Piaf', 9.99, 'Lyon', '2023-09-02',1),
-    ('Plume de zoizeau', 'Zizi Jeanmaire', 4.49, 'Paris', '2023-09-01',1),
-    ('Mon gros vilbrequin', 'Jack Black', 100, 'Bordeaux', '2023-09-10',2),
-    ('clés de 12,5', 'Mecano Compétant', 70000, 'Paris', '2023-09-13',2),
-    ('J ai pas d idées', 'Moi', 2000, 'Lyon', '2023-09-05',3),
-    ('Un truc volé', 'Un Voleur', 1000, 'Bordeaux', '2023-09-06',3),
-    ('Ceci est une arnaque', 'Un Scammeur', 350, 'Lyon', '2023-09-06',2),
-    ('C est enfin fini', 'Unmec Pasinspiré', 80, 'Paris', '2023-09-01',3);
+    ('Un truc cool', 'qazrgarg   zrg  ga rgarg a g ' 'Gérard Bouchard', 200, 'Bordeaux', '2023-09-01',3),
+    ('Mon truc en plume', 'qazrgarg   zrg  ga rgarg a g ' 'Edith Piaf', 9.99, 'Lyon', '2023-09-02',1),
+    ('Plume de zoizeau', 'qazrgarg   zrg  ga rgarg a g ' 'Zizi Jeanmaire', 4.49, 'Paris', '2023-09-01',1),
+    ('Mon gros vilbrequin', 'qazrgarg   zrg  ga rgarg a g ' 'Jack Black', 100, 'Bordeaux', '2023-09-10',2),
+    ('clés de 12,5', 'qazrgarg   zrg  ga rgarg a g ' 'Mecano Compétant', 70000, 'Paris', '2023-09-13',2),
+    ('J ai pas d idées', 'qazrgarg   zrg  ga rgarg a g ' 'Moi', 2000, 'Lyon', '2023-09-05',3),
+    ('Un truc volé', 'qazrgarg   zrg  ga rgarg a g ' 'Un Voleur', 1000, 'Bordeaux', '2023-09-06',3),
+    ('Ceci est une arnaque', 'qazrgarg   zrg  ga rgarg a g ' 'Un Scammeur', 350, 'Lyon', '2023-09-06',2),
+    ('C est enfin fini', 'qazrgarg   zrg  ga rgarg a g ' 'Unmec Pasinspiré', 80, 'Paris', '2023-09-01',3);
 
 INSERT INTO category (type) VALUES
   ('Vêtement'),
@@ -50,3 +48,5 @@ SELECT * FROM ad LEFT JOIN category AS ca ON ca.id = ad.category_id WHERE ca.typ
 SELECT avg(price) FROM ad LEFT JOIN category AS ca ON ca.id = ad.category_id WHERE ca.type = "Autre";
 
 SELECT * FROM ad LEFT JOIN category AS ca ON ca.id = ad.category_id WHERE ca.type LIKE 'V%';
+
+DELETE FROM category WHERE id = 7;
