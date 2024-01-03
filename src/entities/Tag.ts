@@ -1,11 +1,11 @@
 import {
   BaseEntity,
-  Column,
   Entity,
-  ManyToMany,
   PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToMany,
 } from "typeorm";
-
 import Ad from "./Ad";
 
 @Entity()

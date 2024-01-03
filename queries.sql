@@ -1,6 +1,3 @@
-DROP table ad;
-DROP table category;
-
 CREATE TABLE ad 
 (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -8,45 +5,53 @@ CREATE TABLE ad
 	description TEXT,
 	owner VARCHAR(100) NOT NULL,
 	price REAL,
-  picture VARCHAR(255),
-  location VARCHAR(100),
-	createdAt DATE
+    picture VARCHAR(255),
+    location VARCHAR(100),
+	createdAt DATE,
+	category_id INT,
+    FOREIGN KEY (category_id) REFERENCES category(id)
 );
 
-CREATE TABLE category
+CREATE TABLE category 
 (
-id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-type VARCHAR(100) NOT NULL
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name  VARCHAR(100) NOT NULL
 );
+
+INSERT INTO category (name) VALUES 
+    ('vêtement'),
+    ('voiture'),
+    ('autre');
+
 
 INSERT INTO ad (title, owner, price, location, createdAt, category_id) VALUES 
-    ('Un truc cool', 'qazrgarg   zrg  ga rgarg a g ' 'Gérard Bouchard', 200, 'Bordeaux', '2023-09-01',3),
-    ('Mon truc en plume', 'qazrgarg   zrg  ga rgarg a g ' 'Edith Piaf', 9.99, 'Lyon', '2023-09-02',1),
-    ('Plume de zoizeau', 'qazrgarg   zrg  ga rgarg a g ' 'Zizi Jeanmaire', 4.49, 'Paris', '2023-09-01',1),
-    ('Mon gros vilbrequin', 'qazrgarg   zrg  ga rgarg a g ' 'Jack Black', 100, 'Bordeaux', '2023-09-10',2),
-    ('clés de 12,5', 'qazrgarg   zrg  ga rgarg a g ' 'Mecano Compétant', 70000, 'Paris', '2023-09-13',2),
-    ('J ai pas d idées', 'qazrgarg   zrg  ga rgarg a g ' 'Moi', 2000, 'Lyon', '2023-09-05',3),
-    ('Un truc volé', 'qazrgarg   zrg  ga rgarg a g ' 'Un Voleur', 1000, 'Bordeaux', '2023-09-06',3),
-    ('Ceci est une arnaque', 'qazrgarg   zrg  ga rgarg a g ' 'Un Scammeur', 350, 'Lyon', '2023-09-06',2),
-    ('C est enfin fini', 'qazrgarg   zrg  ga rgarg a g ' 'Unmec Pasinspiré', 80, 'Paris', '2023-09-01',3);
+    ('Vieux jeans troués', 'Nick', 200, 'Bordeaux', '2023-09-01', 1),
+    ('T-shit hello world', 'Pierre', 9.99, 'Lyon', '2023-09-02', 1),
+    ('chausettes wild code school', 'Anna', 4.49, 'Paris', '2023-09-01', 1),
+    ('R5 pour pièces', 'Patrick', 100, 'Bordeaux', '2023-09-10', 2),
+    ('DeLorean DMC-12', 'Marty', 70000, 'Paris', '2023-09-13', 2),
+    ('Peugeot 206', 'Amélie', 2000, 'Lyon', '2023-09-05', 2),
+    ('Opel Corsa', 'Lucie', 1000, 'Bordeaux', '2023-09-06', 2),
+    ('Jeu de cartes pokémon collector', 'Jean', 350, 'Lyon', '2023-09-06', 3),
+    ('Chaine hifi complète', 'Jean', 80, 'Paris', '2023-09-01', 3);
 
-INSERT INTO category (type) VALUES
-  ('Vêtement'),
-  ('Voiture'),
-  ('Autre');
 
-SELECT * FROM ad;
-SELECT * FROM category;
+SELECT * FROM ad; 
 
-SELECT * FROM ad WHERE id=9;
-SELECT * FROM ad WHERE location="Bordeaux";
+SELECT * FROM ad WHERE location = 'Bordeaux';
 
-SELECT * FROM ad LEFT JOIN category AS ca ON ca.id = ad.category_id WHERE ca.type = "Autre";
+DELETE FROM ad WHERE price > 40; 
 
-SELECT * FROM ad LEFT JOIN category AS ca ON ca.id = ad.category_id WHERE ca.type = "Vêtement" OR ca.type = "Voiture" ;
+UPDATE ad SET price = 0 WHERE createdAt = '2023-09-01'
 
-SELECT avg(price) FROM ad LEFT JOIN category AS ca ON ca.id = ad.category_id WHERE ca.type = "Autre";
+SELECT AVG(price) FROM ad WHERE location = 'Paris'
 
-SELECT * FROM ad LEFT JOIN category AS ca ON ca.id = ad.category_id WHERE ca.type LIKE 'V%';
+SELECT location, AVG(price) as 'prix moyen des annonces' FROM ad GROUP BY location
 
-DELETE FROM category WHERE id = 7;
+SELECT * FROM ad WHERE category_id = 1;
+
+SELECT * FROM ad WHERE category_id IN(1, 2);
+
+SELECT AVG(price) FROM ad WHERE category_id = 3;
+
+SELECT * FROM ad as a JOIN category as c ON a.category_id = c.id WHERE c.name LIKE 'v%';

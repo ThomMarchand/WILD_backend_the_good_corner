@@ -1,16 +1,14 @@
 import {
   BaseEntity,
+  Entity,
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
 } from "typeorm";
 import { Length, Min } from "class-validator";
-
 import Category from "./Category";
 import Tag from "./Tag";
 
@@ -19,21 +17,21 @@ export default class Ad extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 100 })
   @Length(5, 100, {
-    message: "le titre doit contenir entre 10 et 100 caractères",
+    message: "Le titre doit contenir entre 5 et 100 caractères",
   })
+  @Column({ length: 100 })
   title: string;
 
-  @Column({ type: "text" })
+  @Column({ type: "text", nullable: true })
   description: string;
 
-  @Column()
+  @Column({ length: 100 })
   owner: string;
 
+  @Min(0, { message: "le prix doit etre positif" })
   @Column({ type: "float" })
-  @Min(0, { message: "Le prix doit êtres suppérieur à 0" })
-  price: string;
+  price: number;
 
   @Column({ length: 255 })
   picture: string;
@@ -44,10 +42,15 @@ export default class Ad extends BaseEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Category, (category) => category.ads)
+  @ManyToOne(() => Category, (c) => c.ads, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
   category: Category;
 
   @JoinTable()
-  @ManyToMany(() => Tag, (tag) => tag.ads)
+  @ManyToMany(() => Tag, (t) => t.ads, {
+    cascade: true,
+  })
   tags: Tag[];
 }
