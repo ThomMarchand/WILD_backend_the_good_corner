@@ -1,12 +1,30 @@
 import "reflect-metadata";
 import express, { Request, Response } from "express";
 import { validate } from "class-validator";
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
+import { buildSchema } from "type-graphql";
+import { In, Like } from "typeorm";
+import cors from "cors";
+
 import db from "./db";
 import Ad from "./entities/Ad";
 import Category from "./entities/Category";
 import Tag from "./entities/Tag";
-import { In, Like } from "typeorm";
-import cors from "cors";
+import AdResolver from "./resolvers/AdResolver";
+import CategoryResolver from "./resolvers/CategoryResolver";
+import TagResolver from "./resolvers/TagResolver";
+
+buildSchema({ resolvers: [AdResolver, CategoryResolver, TagResolver] }).then(
+  (schema) => {
+    const server = new ApolloServer({ schema });
+    startStandaloneServer(server, {
+      listen: { port: 4001 },
+    }).then(({ url }) => {
+      console.log(`server ready on ${url}`);
+    });
+  }
+);
 
 const app = express();
 const port = 4000;
@@ -106,13 +124,6 @@ app.get("/autocompleteAdTitle", async (req: Request, res: Response) => {
 
 app.post("/ads", async (req: Request, res: Response) => {
   try {
-    /*
-      const newAd = new Ad()
-      newAd.title = req.body.title
-      newAd.price = req.body.price
-      ...
-      const newAdWithId = await newAd.save();
-    */
     const newAd = Ad.create(req.body);
     const errors = await validate(newAd);
     if (errors.length > 0) return res.status(422).send({ errors });
@@ -240,9 +251,13 @@ app.patch("/tags/:id", async (req: Request, res: Response) => {
     const tagToUpdate = await Tag.findOneBy({
       id: parseInt(req.params.id, 10),
     });
+
     if (!tagToUpdate) return res.sendStatus(404);
+
     await Category.merge(tagToUpdate, req.body);
+
     const errors = await validate(tagToUpdate);
+
     if (errors.length !== 0) return res.status(422).send({ errors });
 
     res.send(await tagToUpdate.save());
