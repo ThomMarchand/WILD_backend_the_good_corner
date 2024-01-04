@@ -8,6 +8,7 @@ import {
 import { Field, InputType, ObjectType } from "type-graphql";
 
 import Ad from "./Ad";
+import { Length } from "class-validator";
 
 @ObjectType()
 @Entity()
@@ -17,7 +18,7 @@ export default class Category extends BaseEntity {
   id: number;
 
   @Field()
-  @Column({ length: 100 })
+  @Column()
   name: string;
 
   @Field(() => [Ad])
@@ -28,5 +29,6 @@ export default class Category extends BaseEntity {
 @InputType()
 export class CategoryInput {
   @Field()
+  @Length(2, 30, { message: "Le nom doit contenir entre 2 et 30 caractères" })
   name: string;
 }

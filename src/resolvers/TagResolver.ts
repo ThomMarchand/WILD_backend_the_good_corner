@@ -8,25 +8,22 @@ import { validate } from "class-validator";
 @Resolver(Tag)
 export default class TagResolver {
   @Query(() => [Tag])
-  tags() {
-    return Tag.find({ relations: { ads: true } });
-  }
+  async getTagByName(@Arg("name") name: string) {
+    const tag = await Tag.find({
+      where: { name: Like(`%${name}%`) },
+      order: { id: "desc" },
+    });
 
-  @Query(() => Tag)
-  async getTagById(@Arg("id") id: number) {
-    const tag = await Tag.findOneBy({ id });
-    console.log(tag);
+    if (tag.length === 0) throw new GraphQLError("tag not found");
 
     return tag;
   }
 
-  @Query(() => [Tag])
-  async getTagByName(@Arg("name") name: string) {
-    const tag = await Tag.find({
-      where: { name: Like(`%${name}%`) },
-    });
+  @Query(() => Tag)
+  async getTagById(@Arg("tagId") id: number) {
+    const tag = await Tag.findOneBy({ id });
 
-    if (tag.length === 0) throw new GraphQLError("tag not found");
+    if (!tag) throw new GraphQLError("tag not found");
 
     return tag;
   }
@@ -43,17 +40,20 @@ export default class TagResolver {
   }
 
   @Mutation(() => Tag)
-  async deleteTag(@Arg("id") id: number) {
-    this.getTagById(id);
-    return "glop";
-    // const toDelete = await Tag.findOne({
-    //   where: { id },
-    // });
+  async updateTag(@Arg("tagId") id: number, @Arg("data") data: TagCategory) {
+    const toUpdate = await this.getTagById(id);
 
-    // if (!toDelete) throw new GraphQLError("tag not found");
+    await Object.assign(toUpdate, data);
 
-    // await toDelete; //.remove();
+    return await toUpdate.save();
+  }
 
-    // return this.tags();
+  @Mutation(() => String)
+  async deleteTag(@Arg("tadId") id: number) {
+    const toDelete = await this.getTagById(id);
+
+    await toDelete.remove();
+
+    return "deleted";
   }
 }

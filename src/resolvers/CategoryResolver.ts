@@ -8,20 +8,25 @@ import Category, { CategoryInput } from "../entities/Category";
 @Resolver(Category)
 export default class CategoryResolver {
   @Query(() => [Category])
-  categories() {
-    return Category.find({ relations: { ads: true } });
-  }
-
-  @Query(() => [Category])
-  async getCategoryByName(@Arg("name") name: string) {
-    const category = await Category.find({
+  async categories(@Arg("name", { nullable: true }) name: string) {
+    const categories = await Category.find({
       relations: {
         ads: true,
       },
-      where: { name: Like(`%${name}%`) },
+      where: {
+        name: name ? Like(`%${name}%`) : undefined,
+      },
+      order: { id: "desc" },
     });
 
-    if (category.length === 0) throw new GraphQLError("category not found");
+    return categories;
+  }
+
+  @Query(() => Category)
+  async getCategoryById(@Arg("categoryId") id: number) {
+    const category = await Category.findOneBy({ id });
+
+    if (!category) throw new GraphQLError("Category not found");
 
     return category;
   }
@@ -35,5 +40,27 @@ export default class CategoryResolver {
       throw new GraphQLError("invalid data", { extensions: { errors } });
 
     return await newCategory.save();
+  }
+
+  @Mutation(() => Category)
+  async updateCategory(
+    @Arg("categoryId") id: number,
+    @Arg("data") data: CategoryInput
+  ) {
+    const toUpdate = await this.getCategoryById(id);
+
+    await Object.assign(toUpdate, data);
+    await toUpdate.save();
+
+    return toUpdate;
+  }
+
+  @Mutation(() => String)
+  async deleteCategory(@Arg("categoryId") id: number) {
+    const toDelete = await this.getCategoryById(id);
+
+    await toDelete.remove();
+
+    return "deleted ok";
   }
 }

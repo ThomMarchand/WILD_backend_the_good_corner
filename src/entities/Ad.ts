@@ -13,6 +13,7 @@ import { Field, Float, InputType, Int, ObjectType } from "type-graphql";
 
 import Category from "./Category";
 import Tag from "./Tag";
+import { ObjectId } from "../type";
 
 @Entity()
 @ObjectType()
@@ -22,9 +23,6 @@ export default class Ad extends BaseEntity {
   id: number;
 
   @Field()
-  @Length(5, 100, {
-    message: "Le titre doit contenir entre 5 et 100 caractères",
-  })
   @Column({ length: 100 })
   title: string;
 
@@ -37,7 +35,6 @@ export default class Ad extends BaseEntity {
   owner: string;
 
   @Field()
-  @Min(0, { message: "le prix doit etre positif" })
   @Column({ type: "float" })
   price: number;
 
@@ -69,14 +66,49 @@ export default class Ad extends BaseEntity {
 }
 
 @InputType()
-export class AdInput {
+export class UpdateAdInput {
+  @Field({ nullable: true })
+  @Length(5, 100, {
+    message: "Le titre doit contenir entre 5 et 100 caractères",
+  })
+  title?: string;
+
+  @Field({ nullable: true })
+  description?: string;
+
+  @Field({ nullable: true })
+  owner?: string;
+
+  @Field(() => Float, { nullable: true })
+  @Min(0, { message: "le prix doit etre positif" })
+  price?: number;
+
+  @Field({ nullable: true })
+  location?: string;
+
+  @Field({ nullable: true })
+  picture?: string;
+
+  @Field(() => Int, { nullable: true })
+  category?: number;
+}
+
+@InputType()
+export class NewAdInput {
   @Field()
+  @Length(5, 100, {
+    message: "Le titre doit contenir entre 5 et 100 caractères",
+  })
   title: string;
+
+  @Field()
+  description: string;
 
   @Field()
   owner: string;
 
   @Field(() => Float)
+  @Min(0, { message: "le prix doit etre positif" })
   price: number;
 
   @Field()
@@ -85,6 +117,9 @@ export class AdInput {
   @Field()
   picture: string;
 
-  @Field(() => Int)
-  category: number;
+  @Field(() => ObjectId)
+  category: ObjectId;
+
+  @Field(() => [ObjectId], { nullable: true })
+  tags?: ObjectId[];
 }

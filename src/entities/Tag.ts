@@ -6,6 +6,7 @@ import {
   ManyToMany,
 } from "typeorm";
 import { Field, InputType, ObjectType } from "type-graphql";
+import { Length } from "class-validator";
 
 import Ad from "./Ad";
 
@@ -28,5 +29,6 @@ export default class Tag extends BaseEntity {
 @InputType()
 export class TagCategory {
   @Field()
+  @Length(2, 30, { message: "Le nom doit contenir entre 2 et 30 caractères" })
   name: string;
 }
