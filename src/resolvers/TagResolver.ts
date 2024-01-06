@@ -2,15 +2,15 @@ import { Resolver, Query, Arg, Mutation } from "type-graphql";
 import { GraphQLError } from "graphql";
 import { Like } from "typeorm";
 
-import Tag, { TagCategory } from "../entities/Tag";
+import Tag, { NewTagCategory, TagCategory } from "../entities/Tag";
 import { validate } from "class-validator";
 
 @Resolver(Tag)
 export default class TagResolver {
   @Query(() => [Tag])
-  async getTagByName(@Arg("name") name: string) {
+  async getTagByName(@Arg("name", { nullable: true }) name: string) {
     const tag = await Tag.find({
-      where: { name: Like(`%${name}%`) },
+      where: { name: name ? Like(`%${name}%`) : undefined },
       order: { id: "desc" },
     });
 
@@ -29,7 +29,7 @@ export default class TagResolver {
   }
 
   @Mutation(() => Tag)
-  async createTag(@Arg("data") data: TagCategory) {
+  async createTag(@Arg("data") data: NewTagCategory) {
     const newTag = Tag.create(data as any);
     const errors = await validate(newTag);
 

@@ -28,6 +28,12 @@ export default class Tag extends BaseEntity {
 
 @InputType()
 export class TagCategory {
+  @Field({ nullable: true })
+  @Length(2, 30, { message: "Le nom doit contenir entre 2 et 30 caractères" })
+  name: string;
+}
+@InputType()
+export class NewTagCategory {
   @Field()
   @Length(2, 30, { message: "Le nom doit contenir entre 2 et 30 caractères" })
   name: string;

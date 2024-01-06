@@ -91,6 +91,9 @@ export class UpdateAdInput {
 
   @Field(() => Int, { nullable: true })
   category?: number;
+
+  @Field(() => [ObjectId], { nullable: true })
+  tags?: ObjectId[];
 }
 
 @InputType()

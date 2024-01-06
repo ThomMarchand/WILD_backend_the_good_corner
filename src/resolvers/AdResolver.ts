@@ -72,7 +72,7 @@ export default class AdResolver {
     await Object.assign(toUpdate, data);
     await toUpdate.save();
 
-    return this.getAdById(id);
+    return this.getAdById(id, true);
   }
 
   @Mutation(() => String)
@@ -81,6 +81,6 @@ export default class AdResolver {
 
     await toDelete.remove();
 
-    return "deleted";
+    return "deleted ok";
   }
 }
