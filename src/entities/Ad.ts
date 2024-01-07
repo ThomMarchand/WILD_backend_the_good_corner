@@ -120,8 +120,8 @@ export class NewAdInput {
   @Field()
   picture: string;
 
-  @Field(() => ObjectId)
-  category: ObjectId;
+  @Field(() => Int)
+  category: number;
 
   @Field(() => [ObjectId], { nullable: true })
   tags?: ObjectId[];
