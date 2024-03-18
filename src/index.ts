@@ -12,7 +12,7 @@ buildSchema({ resolvers: [AdResolver, CategoryResolver, TagResolver] }).then(
   (schema) => {
     const server = new ApolloServer({ schema });
     startStandaloneServer(server, {
-      listen: { port: 4001 },
+      listen: { port: 4000 },
     }).then(({ url }) => {
       initializeDB();
       console.log(`server ready on ${url}`);

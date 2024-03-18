@@ -1,9 +1,17 @@
 import { DataSource } from "typeorm";
+import Ad from "./entities/Ad";
+import Category from "./entities/Category";
+import Tag from "./entities/Tag";
+import env from "./env";
 
-const db = new DataSource({
-  type: "sqlite",
-  database: "the_good_corner.sqlite",
-  entities: ["src/entities/*.ts"],
+export const db = new DataSource({
+  type: "postgres",
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  username: env.DB_USER,
+  password: env.DB_PASS,
+  database: env.DB_NAME,
+  entities: [Ad, Category, Tag],
   synchronize: true,
 });
 
